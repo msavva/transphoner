@@ -1,0 +1,18 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page
+GET     /                         controllers.Application.index
+
+# Transphoner
+GET     /transphoner              controllers.Transphoner.transphone
+GET     /transphoner/lookup       controllers.Transphoner.lookup
+GET     /transphoner/lineup       controllers.Transphoner.lineup
+GET     /transphoner/compare      controllers.Transphoner.compare
+POST    /transphoner              controllers.Transphoner.transphone
+POST    /transphoner/lineup/upload       controllers.Transphoner.uploadLineup
+GET     /transphoner/soramimi     controllers.Transphoner.soramimi
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file             controllers.Assets.at(path="/public", file)

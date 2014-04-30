@@ -1,0 +1,11 @@
+@(elements: helper.FieldElements)
+
+//TO USE: ADD after imports
+//@implicitField = @{ FieldConstructor(customInput.f) }
+
+@elements.input
+@if(elements.args.contains('_tooltip)){
+    <label class="label" for="@elements.id" title="@elements.args.get('_tooltip)">@elements.args.get('_label)</label>
+}else{
+    <label class="label" for="@elements.id">@elements.args.get('_label)</label>
+}

@@ -1,0 +1,20 @@
+@(message: String)
+
+@main("Transphoner") {
+   Welcome to <a href="http://graphics.stanford.edu/projects/transphoner/">TransPhoner</a>!
+   TransPhoner is a system that generates keywords for a variety of scenarios including vocabulary learning, phonetic transliteration, and creative word plays. We select effective keywords by considering phonetic, orthographic and semantic word similarity, and word concept imageability.
+   <img style="position: absolute; right: 0px;" src="@routes.Assets.at("images/transphoner.png")"/>
+
+   <h2>TransPhoner</h2>
+    <ul>
+        <li><a href="@routes.Transphoner.transphone">Convert</a> phrase from one language to another</li>
+        <li><a href="@routes.Transphoner.lineup">Lineup</a> TransPhoner results</li>
+        <li><a href="@routes.Transphoner.lookup">Lookup</a> words</li>
+        <li><a href="@routes.Transphoner.compare">Compare</a> words</li>
+    </ul>
+
+   <h2>Soramimi</h2>
+    <ul>
+        <li><a href="@routes.Transphoner.soramimi">Topic based homophonic transformation</a> of text</li>
+    </ul>
+}

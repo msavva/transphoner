@@ -1,0 +1,80 @@
+@(searchForm: Form[TransphonerParams])
+
+@import helper._
+
+@select(searchForm("phoneApprox"), Transphoners.phoneApproxOptions,
+    '_label -> "Search",
+    'title -> "Search strategy to use",
+    '_showConstraints -> false )
+@inputText(searchForm("orthographicSimilarityWeight"),
+    '_label -> "Orthographic weight",
+     'title -> "Weight for orthographic similarity (default 0.0, not used for Chinese/Japanese)",
+     '_showConstraints -> false )
+@inputText(searchForm("phoneticWeight"),
+    '_label -> "Phonetic weight",
+    'title -> "Weight for phonetic similarity (default 1.0)",
+    '_showConstraints -> false )
+@select(searchForm("phoneSim"), Transphoners.phoneSimOptions,
+    '_label -> "Phonetic similarity",
+    'title -> "Type of phonetic similarity to use (default Aline+Exact)",
+    '_showConstraints -> false)
+@inputText(searchForm("semanticSimilarityWeight"),
+    '_label -> "Semantic weight",
+    'title -> "Weight for semantic similarity (default 0.0)",
+    '_showConstraints -> false )
+@select(searchForm("semanticSimilarity"), Transphoners.semSimilarityOptions,
+    '_label -> "Semantic similarity",
+    'title -> "Type of semantic similarity to use (defaul Bow)",
+    '_showConstraints -> false )
+@inputText(searchForm("imageabilityWeight"),
+    '_label -> "Imageability weight",
+    'title -> "Weight for imageability (default 0.0)",
+    '_showConstraints -> false )
+
+@inputText(searchForm("initialMatchWeight"),
+    '_label -> "Initial match weight",
+    'title -> "Whether the initial sound is to be weighted more (default 1.0)",
+    '_showConstraints -> false )
+@inputText(searchForm("languageModelWeight"),
+    '_label -> "Language model weight",
+    'title -> "Weight for language models (default 0.0, applicable only for Chinese)",
+    '_showConstraints -> false )
+
+@checkbox(searchForm("syllabify"),
+    '_label -> "Syllabify",
+    'title -> "Consider syllable breaks",
+    '_showConstraints -> false )
+@checkbox(searchForm("ignoreTones"),
+    '_label -> "Ignore tones",
+    'title -> "Tones are ignored when transphoning into Mandarin Chinese (tones are used for stress transfer)",
+    '_showConstraints -> false )
+
+@inputText(searchForm("wordPenalty"),
+    '_label -> "Word penalty",
+    'title -> "Penalize phrases with many words",
+    '_showConstraints -> false )
+@inputText(searchForm("infreqPenalty"),
+    '_label -> "Infrequency penalty",
+    'title -> "Penalize infrequent words",
+    '_showConstraints -> false )
+
+@checkbox(searchForm("filterAmbiguousWord"),
+    '_label -> "Filter ambigious words",
+    'title -> "Do not include words that are ambiguous",
+    '_showConstraints -> false )
+@inputText(searchForm("filterRareWordCount"),
+    '_label -> "Filter rare words by count",
+    'title -> "Do not include words that did not appear at least this many times",
+    '_showConstraints -> false )
+@inputText(searchForm("filterRareWordRank"),
+    '_label -> "Filter rare words by rank",
+    'title -> "Do not include words that is not among the top X most frequent words",
+    '_showConstraints -> false )
+@inputText(searchForm("filterMaxSyllablesPerWord"),
+    '_label -> "Filter max syllables per word",
+    'title -> "Do not include words with more than this many syllables",
+    '_showConstraints -> false )
+@checkbox(searchForm("filterSourceWord"),
+    '_label -> "Filter source word",
+    'title -> "Source word is not included in list of suggestions",
+    '_showConstraints -> false )

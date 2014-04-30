@@ -1,0 +1,81 @@
+@(result: TransphonerCompareResult, searchForm: Form[TransphonerParams])
+@import org.babysherlock.transphoner.dict.Word
+
+@import helper._
+
+    @googleTranslateURL(words: Seq[Word], lang: String) = @{
+    //val srcLang = searchForm("inputLang").value.get
+    val spacedText = words.map(w => w.orthographies.head).mkString("%20")
+    val id = if (lang == "ZH") "zh-CN" else lang.toLowerCase
+    "http://translate.google.com/#" + id + "/en/" + spacedText
+}
+
+@quotedWords(words: Seq[Word]) = @{
+    words.map(w => "'" + w.orthographies.head.replaceAll("'", "\\\\'") + "'").mkString(",")
+}
+
+@main("Transphoner") {
+
+    @form(routes.Transphoner.compare()) {
+        @inputText(searchForm("input"), 'autofocus -> (), '_label -> "Compare", '_showConstraints -> false )
+        @select(searchForm("inputLang"), Transphoners.languageOptions, '_label -> "from", '_showConstraints -> false )
+        @inputText(searchForm("target"), 'autofocus -> (), '_label -> "with", '_showConstraints -> false )
+        @select(searchForm("outputLang"), Transphoners.languageOptions, '_label -> "to", '_showConstraints -> false )
+
+        <input type="submit" value="Compare">
+
+        <table id="optionsTable">
+            <thead onclick='$("#optionsBody").toggle();'><tr><th>Options</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>
+                    @transphonerOptions(searchForm)
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    }
+
+
+    @if(result.score != null) {
+        <table class="resultsTable">
+            <thead><tr><a href="@googleTranslateURL(result.inputWords, searchForm("inputLang").value.get)" target="_blank">@result.inputWords.mkString(", ")</a></tr></thead>
+            <br/>
+            <thead><tr><a href="@googleTranslateURL(result.targetWords, searchForm("outputLang").value.get)" target="_blank">@result.targetWords.mkString(", ")</a></tr></thead>
+            @if(result.score != null) {
+                <tr class="resultsRow">
+                <td class="scoreCell">
+                    @result.score.score
+                </td>
+                <td class="resultCell" id="images" colspan="2">
+                    <button onclick="new ImageSearcher([@Html(quotedWords(result.targetWords))], $('#images'));">IMAGES</button>
+                </td>
+                </tr>
+                  @if(result.score.alignment != null) {
+                <tr>
+               <td><pre>@result.score.alignment.phoneAlignment.mkString(scorer = result.phoneSim)</pre></td>
+               <td><pre>@result.score.alignment.syllableAlignment.mkString()</pre><br/></td>
+               <td><pre>@result.score.alignment.wordAlignment.mkString()</pre><br/></td>
+               </tr>
+               @if(result.score.scoreBreakdown != null) {
+                   @result.score.scoreBreakdown.toSeq.sortBy(kv => kv._1).map{ kv =>
+                   <tr>
+                     <td>
+                         @kv._1
+                     </td>
+                     <td>
+                         @kv._2
+                     </td>
+                   </tr>
+                   }
+               }
+               }
+            }
+        </table>
+    }
+
+
+    @if(result.message.nonEmpty) {
+      Message: @result.message
+    }
+}

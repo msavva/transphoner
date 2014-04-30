@@ -1,0 +1,115 @@
+@(result: TransphonerResult, searchForm: Form[TransphonerParams])
+@import org.babysherlock.transphoner.dict.Word
+@import org.babysherlock.transphoner.phonetics.StressType
+
+@import helper._
+@import StressType.primary
+
+@googleTranslateURL(words: Seq[Word], lang: String) = @{
+    //val srcLang = searchForm("inputLang").value.get
+    val spacedText = words.map(w => w.orthographies.head).mkString("%20")
+    val id = if (lang == "ZH") "zh-CN" else lang.toLowerCase
+    "http://translate.google.com/#" + id + "/en/" + spacedText
+}
+
+@quotedWords(words: Seq[Word]) = @{
+    words.map(w => "'" + w.orthographies.head.replaceAll("'", "\\\\'") + "'").mkString(",")
+}
+
+@main("Transphoner") {
+
+    @form(routes.Transphoner.transphone()) {
+        @inputText(searchForm("input"), 'autofocus -> (), '_label -> "Transphone", '_showConstraints -> false)
+        @select(searchForm("inputLang"), Transphoners.languageOptions, '_label -> "from", '_showConstraints -> false )
+        @select(searchForm("outputLang"), Transphoners.languageOptions, '_label -> "to", '_showConstraints -> false )
+
+        <input type="submit" value="Transphone">
+
+        <table id="optionsTable">
+            <thead onclick='$("#optionsBody").toggle();'><tr><th>Options</th></tr></thead>
+            <tbody id="optionsBody">
+                <tr>
+                    <td>
+                        @inputText(searchForm("nrows"),
+                            'title -> "Number of suggestions to return",
+                            '_showConstraints -> false )
+                        @inputText(searchForm("searchBeamSize"),
+                            '_label -> "Beam size",
+                            'title -> "Beam size to use during search (default 2 x nrows)",
+                            '_showConstraints -> false )
+                        @transphonerOptions(searchForm)
+                        @checkbox(searchForm("showClusters"),
+                            '_label -> "Show clusters",
+                            'title -> "Show clusters of words that are homophonic (useful for Chinese/Japanese)",
+                            '_showConstraints -> false )
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    }
+
+
+    @if(result.transphoneScores.nonEmpty) {
+        <table class="resultsTable">
+            <thead><tr><a href="@googleTranslateURL(result.inputWords, searchForm("inputLang").value.get)" target="_blank">@result.inputWords.mkString(", ")</a></tr></thead>
+            <tr><th>Words</th><th>IPA</th><th>Score</th></tr>
+        @result.transphoneScores.zipWithIndex.map{ case(m,i)=>
+            <tr class="resultsRow">
+            <td class="resultCell">
+                <a href="@googleTranslateURL(m.words, searchForm("outputLang").value.get)" target="_blank">
+                    @m.words.zip(m.wordStresses).map{ case (w,s) =>
+                        @if(s.equals(primary)) {
+                          <b>@w.nativeWord</b>
+                        } else {
+                          @w.nativeWord
+                        }
+                    }
+                </a>
+            </td>
+            <td class="resultCell">
+                /@m.words.map(w => w.ipa).mkString(" ")/
+            </td>
+            <td class="scoreCell">
+                @m.score
+            </td>
+            <td class="resultCell" id="images@i">
+                <button onclick="new ImageSearcher([@Html(quotedWords(m.words))], $('#images@i'));">IMAGES</button>
+            </td>
+            </tr>
+        }
+        </table>
+    }
+
+
+    @if(result.transphoneClusters.nonEmpty) {
+        <table class="resultsTable">
+            <thead><tr>@result.inputWords.mkString(", ")</tr></thead>
+            <tr><th>Words</th><th>IPA</th><th>Score</th></tr>
+            @result.transphoneClusters.map{ m =>
+                <tr class="resultsRow">
+                    <td class="resultCell">
+                        <table class="wordClusterTable">
+                            <tr>
+                                @m.words.map{ ws =>
+                                    <td>
+                                    @ws.map(w => w.nativeWord).mkString(",")
+                                    </td>
+                                }
+                            </tr>
+                        </table>
+                    </td>
+                    <td class="resultCell">
+                        /@m.words.map(ws => ws.head.ipa).mkString(" ")/
+                    </td>
+                    <td class="scoreCell">
+                    @m.score
+                    </td>
+                </tr>
+            }
+        </table>
+    }
+
+    @if(result.message.nonEmpty) {
+      Message: @result.message
+    }
+}

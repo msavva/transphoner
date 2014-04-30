@@ -1,0 +1,74 @@
+@(result: TransphonerLookupResult, searchForm: Form[TransphonerLookupParams])
+
+@import helper._
+
+@main("Transphoner Lookup") {
+
+    <h2>Transphone Lookup</h2>
+
+    @form(routes.Transphoner.lookup) {
+
+        <table cellpadding="20">
+            <tr>
+                <td>
+                    @inputText(searchForm("input"), '_showConstraints -> false )
+                    @select(searchForm("inputLang"), Transphoners.languageOptions,
+                        '_label -> "Language",
+                        'title -> "Input language",
+                        '_showConstraints -> false  )
+                    @select(searchForm("phoneSim"), Transphoners.phoneSimOptions,
+                        '_label -> "Phonetic similarity",
+                        'title -> "Type of phonetic similarity to use",
+                        '_showConstraints -> false )
+                </td>
+            </tr>
+        </table>
+
+        <input type="submit" value="Lookup">
+    }
+
+    <h3>@result.words.map(t => (t.orthography, t.word)).mkString(", ")</h3>
+    @if(result.words.nonEmpty) {
+        <table>
+            <tr><th>Words</th><th>IPA</th><th>Count</th><th>Frequency</th><th>Rank</th><th>Pronunciation Difference</th><th>Synsets</th><th>Imageability</th></tr>
+        @result.words.map{ w =>
+            <tr>
+            <td>
+                @w.orthography
+            </td>
+            <td>
+                @if(w.word != null) {
+                    <pre>@w.word.pronunciations.map(phones => "/" + phones.mkString("") + "/" ).mkString("\n")</pre>
+
+                }
+            </td>
+            <td>
+                @if(w.word != null) { @("%.1f".format(w.word.count)) }
+            </td>
+            <td>
+                @if(w.word != null) { @("%.5f".format(w.word.freq)) }
+            </td>
+            <td>
+                @if(w.word != null) { @w.word.rank }
+            </td>
+            <td>
+                @if(w.mostDifferentPron != null) { @("%.3f".format(w.mostDifferentPron.diff)) }
+            </td>
+            <td>
+                @if(w.synsets != null) {
+                    @w.synsets.map{ synset =>
+                        @("%.3f".format(synset.score)) @synset.id : @synset.glosses.mkString(";") @("%.3f".format(synset.imageability)) <br/>
+                    }
+                }
+            </td>
+            <td>
+                @if(w.word != null) { @("%.3f".format(w.imageability)) }
+            </td>
+            </tr>
+        }
+        </table>
+    }
+    @if(result.message.nonEmpty) {
+      Message: @result.message
+    }
+}

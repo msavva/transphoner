@@ -1,0 +1,156 @@
+@(result: TransphonerLineupResult, searchForm: Form[TransphonerParams])
+@import org.babysherlock.transphoner.dict.Word
+@import org.babysherlock.transphoner.phonetics.StressType
+
+@import helper._
+@import StressType.primary
+
+    @googleTranslateURL(words: Seq[Word], lang: String) = @{
+    //val srcLang = searchForm("inputLang").value.get
+    val spacedText = words.map(w => w.orthographies.head).mkString("%20")
+    val id = if (lang == "ZH") "zh-CN" else lang.toLowerCase
+    "http://translate.google.com/#" + id + "/en/" + spacedText
+}
+
+@quotedWords(words: Seq[Word]) = @{
+    words.map(w => "'" + w.orthographies.head.replaceAll("'", "\\\\'") + "'").mkString(",")
+}
+
+@transphoneCell(lang: String, words: Seq[Word], stresses: Seq[StressType.Value], gloss: String, id: String, showLang: Boolean = false) = {
+    <td class="resultCell">
+       <a href="@googleTranslateURL(words, lang)" target="_blank">
+            @if(showLang) { @lang.toLowerCase: }
+            @words.zip(stresses).map{ case (w,s) =>
+            @if(s.equals(primary)) {
+               <b>@w.orthographies.head</b>
+            } else {
+                @w.orthographies.head
+            }
+        }
+        </a>
+        <div class="lineup" id="images@id">
+          <button class="showImageButton" onclick="new ImageSearcher([@Html(quotedWords(words))], $('#images@id'));">IMAGES</button>
+        </div>
+        /@words.map(w => w.ipa).mkString(" ")/
+        <br/>
+        @gloss
+    </td>
+}
+
+@main("Transphoner Lineup") {
+
+    @form(action = routes.Transphoner.uploadLineup(), 'enctype -> "multipart/form-data") {
+        <input type="file" name="lineup">
+        <label for="expandImages">expandImages</label>
+        <input type="checkbox" id="expandImages" name="expandImages" value="true">
+        <input type="submit">
+    }
+
+    @form(routes.Transphoner.lineup()) {
+        @inputText(searchForm("input"), 'autofocus -> (), '_label -> "Transphone", '_showConstraints -> false )
+        @select(searchForm("inputLang"), Transphoners.languageOptions, '_label -> "from", '_showConstraints -> false )
+        @select(searchForm("outputLang"), Transphoners.languageOptions, '_label -> "to", '_showConstraints -> false, 'multiple -> "multiple" )
+        <script>
+        $(document).ready(function() {
+            @searchForm("outputLang" ).value.getOrElse("").split(",").map{ lang =>
+                $('#outputLang option[value="@lang"]').prop('selected', 'selected');
+            }
+        })
+        </script>
+
+        <input type="submit" value="Transphone">
+
+        <table id="optionsTable">
+            <thead onclick='$("#optionsBody").toggle();'><tr><th>Options</th></tr></thead>
+            <tbody id="optionsBody">
+                <tr>
+                    <td>
+                        @inputText(searchForm("nrows"),
+                            'title -> "Number of suggestions to return",
+                            '_showConstraints -> false )
+                        @inputText(searchForm("searchBeamSize"),
+                            '_label -> "Beam size",
+                            'title -> "Beam size to use during search (default 2 x nrows)",
+                            '_showConstraints -> false )
+                        @transphonerOptions(searchForm)
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    }
+
+    @if(result.transphones.nonEmpty) {
+        <div  id="results">
+        <table class="resultsTable lineup">
+          <tr><th>Input</th>
+              @result.outputLangs.map { lang =>
+                <th>@lang</th>
+              }
+          </tr>
+
+          @result.transphones.zipWithIndex.map { case (t,i) =>
+            @if(t.transphones.nonEmpty) {
+                @defining(t.transphones.zipWithIndex.map( x =>
+                    x._1.transphoneScores.zipWithIndex.map( y => (y._2, x._2, y._1, x._1.outputLang) ) ).flatten.groupBy(
+                        z => z._1 ).toSeq.sortBy(w => w._1) ) { rows => @rows.map{ row =>
+                    @defining(if (row._1 == rows.size - 1) "lineupOk lineupBorder" else "lineupOk") { rowClass =>
+                    <tr class="@rowClass">
+                        @if(row._1 == 0) {
+                            @defining(t.transphones.head) { s =>
+                                @transphoneCell( s.inputLang, s.inputWords, Seq.fill(s.inputWords.length)(StressType.none), s.inputGloss, "" + i, true )
+                            }
+                        } else {
+                            <td></td>
+                        }
+                        @row._2.sortBy( x => x._2 ).map{ z =>
+                            @defining(z._3) { s =>
+                                @transphoneCell( z._4, s.words, s.wordStresses, s.gloss, i + "_" + z._1 + "_" + z._2, false )
+                            }
+                        }
+                    </tr>
+                    }
+                  }
+                }
+            }
+
+            @if(t.message.nonEmpty) {
+                <tr class="lineupError">
+                <td>@t.inputLang:@t.input</td>
+                <td>@t.message</td>
+                </tr>
+            }
+          }
+        </table>
+        </div>
+
+        <div>
+            <script>
+            function saveResults() {
+                var headHtml = $("head" ).html();
+                var tableHtml = $("#results" ).html();
+                var data = "<html>" + headHtml + "<body>" + tableHtml + "</body></html>";
+                var win=window.open("","_blank" );
+                with(win.document)
+                {
+                    open();
+                    write(data);
+                    close();
+                }
+            }
+            function showAllImages() {
+                var buttons = $(".showImageButton");
+                buttons.click();
+            }
+
+            </script>
+
+            <button id="saveResults" onclick='saveResults()'>Save Results</button>
+            <button id="showAllImages" onclick='showAllImages()'>Show All Images</button>
+        </div>
+    }
+
+    @if(result.message.nonEmpty) {
+      Message: @result.message
+    }
+
+}

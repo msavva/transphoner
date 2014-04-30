@@ -1,0 +1,80 @@
+@(result: SoramimiResult, searchForm: Form[SoramimiParams])
+@import org.babysherlock.transphoner.dict.Word
+
+@import helper._
+
+@googleTranslateURL(words: Seq[Word], lang: String) = @{
+    //val srcLang = searchForm("inputLang").value.get
+    val spacedText = words.map(w => w.orthographies.head).mkString("%20")
+    val id = if (lang == "ZH") "zh-CN" else lang.toLowerCase
+    "http://translate.google.com/#" + id + "/en/" + spacedText
+}
+
+@quotedWords(words: Seq[Word]) = @{
+    words.map(w => "'" + w.orthographies.head.replaceAll("'", "\\\\'") + "'").mkString(",")
+}
+
+@main("Soramimi") {
+    <p>
+    Try out topic based <a href="http://en.wikipedia.org/wiki/Homophonic_transformation">homophonic transformation</a>
+    using the TransPhoner! When applied to song lyrics, this is known as
+    <a href="http://en.wikipedia.org/wiki/Soramimi">Soramimi</a>.
+    Given a piece of text (such as song lyrics), for each phrase, we pick a word to transform
+    into a phonetically similar word that is related to the provided topic.  We use the WordNet
+    hierarchy to get words that are related to the provided topic.
+    </p>
+    <p>
+    Currently works only for English to English
+    (this is more properly a monolingual <a href="http://en.wikipedia.org/wiki/Mondegreen">Mondegreen</a>).
+    Please enter phrases on separate lines, with no punctuations.
+    </p>
+    @form(routes.Transphoner.soramimi()) {
+        @inputText(searchForm("topic"), '_label -> "Topic", '_showConstraints -> false )
+        @select(searchForm("inputLang"), Transphoners.languageOptions, '_label -> "from", '_showConstraints -> false )
+        @select(searchForm("outputLang"), Transphoners.languageOptions, '_label -> "to", '_showConstraints -> false )
+        <br>
+        @textarea(searchForm("input"), 'autofocus -> (), '_label -> "Transform", '_showConstraints -> false, 'rows -> 8, 'cols -> 50 )
+        <br>
+        <input type="submit" value="Transform">
+    }
+
+
+    @if(result.phrases != null && result.phrases.nonEmpty) {
+        <table class="resultsTable">
+            <thead><th>Phrase</th><th>Best</th><th>Options</th></thead>
+        @result.phrases.zipWithIndex.map{ case(phrase,i)=>
+            <tr class="resultsRow">
+            <td class="resultCell">
+                @phrase.phrase
+            </td>
+            <td class="resultCell">
+                @phrase.topSuggestion.words.map{ sword =>
+                    @if(sword.transform != null) {
+                        <span class="transformed">@sword.transform</span>
+                    }else{
+                        @sword.word
+                    }
+                }
+            </td>
+            <td class="resultCell">
+                @phrase.suggestions.map{ suggestion =>
+                    @suggestion.score
+                    @suggestion.words.map{ sword =>
+                      @if(sword.transform != null) {
+                        <span class="transformed">@sword.transform</span>
+                      }else{
+                        @sword.word
+                      }
+                    }
+                    <br>
+                }
+            </td>
+            </tr>
+        }
+        </table>
+    }
+
+    @if(result.message.nonEmpty) {
+      Message: @result.message
+    }
+}

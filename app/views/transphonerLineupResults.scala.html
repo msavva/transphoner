@@ -1,0 +1,100 @@
+@(result: TransphonerLineupResult, params: UploadLineupParams)
+@import org.babysherlock.transphoner.dict.Word
+@import org.babysherlock.transphoner.phonetics.StressType
+
+@import StressType.primary
+
+    @googleTranslateURL(words: Seq[Word], lang: String) = @{
+    //val srcLang = searchForm("inputLang").value.get
+    val spacedText = words.map(w => w.orthographies.head).mkString("%20")
+    val id = if (lang == "ZH") "zh-CN" else lang.toLowerCase
+    "http://translate.google.com/#" + id + "/en/" + spacedText
+}
+
+@quotedWords(words: Seq[Word]) = @{
+    words.map(w => "'" + w.orthographies.head.replaceAll("'", "\\\\'") + "'").mkString(",")
+}
+
+@transphoneCell(lang: String, words: Seq[Word], stresses: Seq[StressType.Value], gloss: String, id: String, showLang: Boolean = false) = {
+    <td class="resultCell">
+       <a href="@googleTranslateURL(words, lang)" target="_blank">
+            @if(showLang) { @lang.toLowerCase: }
+            @words.zip(stresses).map{ case (w,s) =>
+            @if(s.equals(primary)) {
+               <b>@w.orthographies.head</b>
+            } else {
+                @w.orthographies.head
+            }
+        }
+        </a>
+        <div class="lineup" id="images@id">
+          @if(params.expandImages) {
+              @words.map { w =>
+                  @ImageSearch.search(w.orthographies.head).map{ url =>
+                  <span id="d@id">
+                    <img src="@url"/>
+                  </span>
+                  }
+              }
+          } else {
+            <button class="showImageButton" onclick="new ImageSearcher([@Html(quotedWords(words))], $('#images@id'));">IMAGES</button>
+          }
+        </div>
+        /@words.map(w => w.ipa).mkString(" ")/
+        <br/>
+        @gloss
+    </td>
+}
+
+@mainBasic("Transphoner Lineup") {
+
+    @if(result.transphones.nonEmpty) {
+        <div  id="results">
+        <table class="resultsTable lineup">
+          <tr><th>Input</th>
+              @result.outputLangs.map { lang =>
+                <th>@lang</th>
+              }
+          </tr>
+
+          @result.transphones.zipWithIndex.map { case (t,i) =>
+            @if(t.transphones.nonEmpty) {
+                @defining(t.transphones.zipWithIndex.map( x =>
+                    x._1.transphoneScores.zipWithIndex.map( y => (y._2, x._2, y._1, x._1.outputLang) ) ).flatten.groupBy(
+                        z => z._1 ).toSeq.sortBy(w => w._1) ) { rows => @rows.map{ row =>
+                    @defining(if (row._1 == rows.size - 1) "lineupOk lineupBorder" else "lineupOk") { rowClass =>
+                    <tr class="@rowClass">
+                        @if(row._1 == 0) {
+                            @defining(t.transphones.head) { s =>
+                                @transphoneCell( s.inputLang, s.inputWords, Seq.fill(s.inputWords.length)(StressType.none), s.inputGloss, "" + i, true )
+                            }
+                        } else {
+                            <td></td>
+                        }
+                        @row._2.sortBy( x => x._2 ).map{ z =>
+                            @defining(z._3) { s =>
+                                @transphoneCell( z._4, s.words, s.wordStresses, s.gloss, i + "_" + z._1 + "_" + z._2, false )
+                            }
+                        }
+                    </tr>
+                    }
+                  }
+                }
+            }
+
+            @if(t.message.nonEmpty) {
+                <tr class="lineupError">
+                <td>@t.inputLang:@t.input</td>
+                <td>@t.message</td>
+                </tr>
+            }
+          }
+        </table>
+        </div>
+    }
+
+    @if(result.message.nonEmpty) {
+      Message: @result.message
+    }
+
+}

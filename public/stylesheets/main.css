@@ -1,0 +1,109 @@
+html * {
+    font: 14pt;
+    vertical-align: bottom;
+}
+
+#input
+{
+    width: 500px;
+    padding-left: 10px;
+}
+
+#optionsTable
+{
+    float: right;
+    padding: 1em;
+    margin: 1em;
+    border: 1px solid black;
+}
+
+th
+{
+    background-color: green;
+    color: white;
+}
+
+.resultsTable
+{
+    border-collapse:separate;
+    border-spacing:20px 5px;
+}
+
+.scoreCell
+{
+    float: right;
+}
+
+.resultsRow:hover
+{
+    background-color: darkslategray;
+    color: white;
+}
+
+label
+{
+    display: inline-block;
+    margin-right: 0.5em;
+    text-align: left;
+}
+
+dl, dd
+{
+    vertical-align: middle;
+    white-space: normal;
+    display: inline-block;
+    margin: 0;
+    padding: 0;
+}
+
+.wordClusterTable
+{
+    border-collapse:separate;
+    border-spacing:20px 5px;
+}
+
+.wordClusterTable td
+{
+    border: 1px solid black;
+}
+
+.resultCell img
+{
+    vertical-align: middle;
+    padding: 10px;
+    max-width: 200px;
+}
+
+.resultCell button
+{
+    vertical-align: middle;
+    min-width: 600px;
+}
+
+.resultCell .lineup img
+{
+    vertical-align: middle;
+    padding: 10px;
+    max-width: 50px;
+}
+
+.resultCell .lineup button
+{
+    vertical-align: middle;
+    min-width: 200px;
+}
+
+tr.lineupBorder td
+{
+    border-bottom: 4px solid green;
+}
+
+tr.lineupError td
+{
+    background-color: lavenderblush;
+}
+
+.transformed
+{
+    color: red;
+}

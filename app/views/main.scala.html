@@ -1,0 +1,32 @@
+@(title: String)(content: Html)
+
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>@title</title>
+        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
+        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/menu.css")">
+        <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
+        <script src="@routes.Assets.at("javascripts/jquery-1.9.0.min.js")" type="text/javascript"></script>
+        <script src="@routes.Assets.at("javascripts/ImageSearcher.js")" type="text/javascript"></script>
+        <script>
+        //TODO: Select default arguments in a cleaner way
+        $(document).ready(function() {
+            var inputText = $('#input').val();
+            if (!inputText) {
+                $('#inputLang option[value="EN"]' ).prop('selected', 'selected');
+                $('#outputLang option[value="EN"]' ).prop('selected', 'selected');
+                $('#phoneSim option[value="AlineExactSimilarity"]').prop('selected', 'selected');
+                $('#phoneApprox option[value="SimTrie"]').prop('selected', 'selected');
+                $('#semanticSimilarity option[value="bow"]').prop('selected', 'selected');
+                $('#phoneticWeight').val(1)
+            }
+        });
+        </script>
+    </head>
+    <body>
+        @menu()
+        @content
+    </body>
+</html>
