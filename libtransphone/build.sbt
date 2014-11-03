@@ -21,9 +21,9 @@ libraryDependencies ++= Seq(
   "org.goobs" % "sim" % "1.0" from "https://github.com/gangeli/sim/releases/download/v1.0/sim.jar",
   "edu.smu.tspell.wordnet" % "jaws" % "1.3" from "http://lyle.smu.edu/~tspell/jaws/jaws-bin.jar",
   "edu.princeton.wordnet" % "wordnet" % "3.1" artifacts(Artifact("wordnet","bundle","tar.gz",None, Nil, Some(new URL("http://wordnetcode.princeton.edu/wn3.1.dict.tar.gz")))),
-  "org.lexno" % "uwnapi" % "1.02" artifacts(Artifact("uwnapi","bundle","zip",None, Nil, Some(new URL("http://www.mpi-inf.mpg.de/yago-naga/uwn/uwnapi.zip")))),
-  "org.lexno" % "uwnapi-wordnet" % "1.02" artifacts(Artifact("uwnapi-wordnet","bundle","zip",None, Nil, Some(new URL("http://www.mpi-inf.mpg.de/yago-naga/uwn/wordnet.zip")))),
-  "org.lexno" % "uwnapi-core" % "1.02" artifacts(Artifact("uwnapi-core","bundle","zip",None, Nil, Some(new URL("http://www.mpi-inf.mpg.de/yago-naga/uwn/uwn.zip"))))
+  "org.lexno" % "uwnapi" % "1.02" artifacts(Artifact("uwnapi","bundle","zip",None, Nil, Some(new URL("http://resources.mpi-inf.mpg.de/yago-naga/uwn/uwnapi.zip")))),
+  "org.lexno" % "uwnapi-wordnet" % "1.02" artifacts(Artifact("uwnapi-wordnet","bundle","zip",None, Nil, Some(new URL("http://resources.mpi-inf.mpg.de/yago-naga/uwn/wordnet.zip")))),
+  "org.lexno" % "uwnapi-core" % "1.02" artifacts(Artifact("uwnapi-core","bundle","zip",None, Nil, Some(new URL("http://resources.mpi-inf.mpg.de/yago-naga/uwn/uwn.zip"))))
   )
 
 val basePath = taskKey[File]("external data path")
